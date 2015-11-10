@@ -1,0 +1,28 @@
+% Convert tablature to notes with an offset (transpose)
+
+:- use_module(library(lists)).
+
+transpose(N) --> [C],
+		{ nth0(S,"CcDdEFfGgAbB",C), T is N + S },
+		transpose_line(T),
+		transpose(N).
+transpose(N) --> eol, transpose(N).
+transpose(_) --> []. 
+
+transpose_line(_) --> eol.
+transpose_line(T) --> [In],
+		      { convert(In,T,Out), put(Out) },
+%		      eat_hyphen(In),
+		      transpose_line(T).
+
+convert(In,Trans,Out) :-  nth0(N,"0123456789",In),
+		          Off is Trans + N ,
+		          nth0(Off,"CcDdEFfGgAbBCcDdEFfGgAbB",Out).
+convert(C,_,C).
+
+eol --> [0'\n], { writeln('') }.
+
+eat_hyphen(0'-) --> [].
+eat_hyphen(_)   --> "-".
+
+test :- phrase_from_file(transpose(4),when).

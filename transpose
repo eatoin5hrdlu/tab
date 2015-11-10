@@ -1,0 +1,20 @@
+% Convert tablature to notes with an offset (transpose)
+:- use_module(library(lists)).
+
+transpose(N) --> [C],
+		{ nth0(S,"CcDdEFfGgAbB",C), !, T is N + S },
+		transpose_line(T),
+		transpose(N).
+transpose(N) --> eol, !, transpose(N).
+transpose(_) --> []. 
+
+transpose_line(_) --> eol, !.
+transpose_line(T) --> [C], { convert(C,T,R), put(R) }, transpose_line(T).
+
+convert(C,T,R) :-  nth0(N,"0123456789",C),
+		   !,
+		   O is N+T ,
+		   nth0(O,"CcDdEFfGgAbBCcDdEFfGgAbB",R).
+convert(C,_,C).
+
+test :- phrase_from_file(transpose(4),when).
