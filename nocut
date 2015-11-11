@@ -1,28 +1,25 @@
 % Convert tablature to notes with an offset (transpose)
-
+:- set_prolog_flag(double_quotes, codes).
 :- use_module(library(lists)).
 
-transpose(N) --> [C],
-		{ nth0(S,"CcDdEFfGgAbB",C), T is N + S },
-		transpose_line(T),
-		transpose(N).
-transpose(N) --> eol, transpose(N).
-transpose(_) --> []. 
+transpose(N) --> string(N,T), transpose_line(T), transpose(N).
+transpose(N) --> nl, transpose(N).
+transpose(_) --> [].
 
-transpose_line(_) --> eol.
-transpose_line(T) --> [In],
-		      { convert(In,T,Out), put(Out) },
-%		      eat_hyphen(In),
-		      transpose_line(T).
+transpose_line(_) --> nl.
+transpose_line(T) --> convert(T), transpose_line(T).
 
-convert(In,Trans,Out) :-  nth0(N,"0123456789",In),
-		          Off is Trans + N ,
-		          nth0(Off,"CcDdEFfGgAbBCcDdEFfGgAbB",Out).
-convert(C,_,C).
+string(In,Out,[C|T],T) :- nth0(N,"CcDdEFfGgAbB",C), Out is In + N.
 
-eol --> [0'\n], { writeln('') }.
+convert(Trans,[In|T],T) :-
+    nth0(N,"0123456789",In),
+    Off is Trans + N ,
+    nth0(Off,"CcDdEFfGgAbBCcDdEFfGgAbB",Out),
+    put(Out).
 
-eat_hyphen(0'-) --> [].
-eat_hyphen(_)   --> "-".
+convert(_,[C|T],T) :- put(C).
+
+nl([0'\n|T],T) :- writeln('').
 
 test :- phrase_from_file(transpose(4),when).
+
